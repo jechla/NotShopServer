@@ -1,0 +1,23 @@
+{
+  "name": "notshopserver",
+  "version": "1.0.0",
+  "description": "Not a Shop Server",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jechla/NotShopServer.git"
+  },
+  "keywords": [
+    "Node",
+    "Server"
+  ],
+  "author": "Jens Chr. Larsen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jechla/NotShopServer/issues"
+  },
+  "homepage": "https://github.com/jechla/NotShopServer#readme"
+}
