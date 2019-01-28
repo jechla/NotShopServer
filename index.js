@@ -6,60 +6,28 @@ const cors = require('cors');
 var jsonParser = bodyParser.json();
 var textParser = bodyParser.text();
 
-/*var addUser = express();
-addUser.get("/:data", function(req,res){
-  console.log(req.params.data);
-  res.send(JSON.stringify({UserId: "1",OrderId: "1"}));
-});
-/*
-addUser.post("/", textParser, function(req,res){
-  if (!req.body){
-    console.log('ingen body,navn');
-  }
-  let addUserForm = JSON.parse(req.body);
-  console.log(addUserForm);
-  res.set('Content-Type', 'text/html');
-  res.send(JSON.stringify({UserId: "1",OrderId: "1"}));
-});
-/*
-var login = express();
-login.post("/" textParser, function(req,res){
 
-});
-*/
-function addUser(form, callback){
+function addUser(form){
+  return new Promise((resolve,reject) => {
   let db = new sql.Database('NotShop.db');
 
   formArr = [form.navn, form.adresse,form.postnummer, form.telefon, form.email, form.password];
-  //var UsID = 0;
+
 
 
   db.run(`INSERT INTO User (Navn,Adresse,Postnummer,Telefon,Email,Password) VALUES(?,?,?,?,?,?)`, formArr, function(err){
     if (err) {
-      return console.log(err.message);
+      reject(console.log(err.message));
     }
     // get the last insert id
-    db.close((err)=>{  if (err) {
-        return console.log(err.message);
-      }});
-    callback(this.lastID);
-    //UsID = this.lastID;
-     //console.log(`A row has been inserted with rowid ${this.lastID}`);
-     //console.log(`indhold i UsID ${UsID}`);
+
+    resolve(this.lastID);
 
   });
-  /*db.run(`INSERT INTO Orders (UserId) VALUES(?)`, [parseInt(UsID,10)] , function(err){
-    if (err) {
-      return console.log(err.message);
-    }
-    // get the last insert id
-    OrID = this.lastID;
-    console.log(`indhold i OrID ${OrID}`);
-  });*/
-
-  //console.log(`test hvad er der i UsID: ${UsID}`);
-  //db.close();
-  //callback(UsID);
+  db.close((err)=>{  if (err) {
+      reject(console.log(err.message));
+    }});
+  });
 }
 
 function addUserToOrder(id, callback){
@@ -81,7 +49,7 @@ function addUserToOrder(id, callback){
 }
 var app = express();
 app.use(cors());
-app.get("/addUser/:data", function(req,res){
+app.post("/addUser/", async function(req,res){
   var formjson = JSON.parse(req.params.data.substring(1));
   addUser(formjson, (ret) => {
     addUserToOrder(ret, (UsID,OrID)=>{
