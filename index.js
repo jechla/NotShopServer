@@ -6,7 +6,11 @@ const cors = require('cors');
 var jsonParser = bodyParser.json();
 var textParser = bodyParser.text();
 
-
+/* funktioner til at tilføje en bruger til databasen
+addUser tager et JSON som parameter og indsætter det i db
+Den anden funktion addUserToOrder taget bruger ID som parametet
+og indsætter i ordre tabellen.
+*/
 function addUser(form){
   return new Promise((resolve,reject) => {
   let db = new sql.Database('NotShop.db');
@@ -45,30 +49,57 @@ function addUserToOrder(id){
 });
 }
 
+/*
+Kald af express samt opsætning af cors og bodyParser
+*/
 var app = express();
 app.use(cors());
+app.use(bodyParser.text());
+
+
+/*
+express til tilføje bruger
+*/
 app.post("/addUser/", async function(req,res){
   var formjson = JSON.parse(req.body);
   try {
-    let usId = await addUser(formjson)
-    let orId = await addUserToOrder(usId)
+    var usId = await addUser(formjson)
+    var orId = await addUserToOrder(usId)
     res.status(200).send(JSON.stringify({UserId: usId,OrderId: orId}));
   }
   catch(error) {
     console.error(error);
   }
-  console.log({UserId: usId,OrderId: orId});
+  //console.log({UserId: usId,OrderId: orId});
 });
 
+function checkUser(form){
+  let db = new sql.Database('NotShop.db');
 
-app.get("/login/:data", function(req,res){
-  var formjson = JSON.parse(req.params.data.substring(1));
+  let sqlCode = `SELECT UserId userId FROM User WHERE Navn=? AND Password=?`;
+
+  db.get(sqlCode,[form.username,form.password], (err,row) =>{
+    if (err){
+      return console.error(err.message);
+    }
+    return row.userId;
+  });
+}
+
+
+/*
+Express til login
+*/
+app.post("/login/", function(req,res){
+  var formjson = JSON.parse(req.boby);
+  console.log(formjson);
+  var userId = checkUser(formjson);
   console.log(formjson);
   res.status(200).send(JSON.stringify({UserId: "1",OrderId: "1"}));
 });
-//app.use("/addUser",addUser);
-//app.use("/login",login);
 
+
+// Opsæt server på 8080
 
 app.listen(8080, function(){
   console.log('lytter på 8080');
