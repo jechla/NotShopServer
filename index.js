@@ -30,40 +30,37 @@ function addUser(form){
   });
 }
 
-function addUserToOrder(id, callback){
-  //var OrID = 0;
+function addUserToOrder(id){
+  return new Promise( (resolve,reject) => {
   let db = new sql.Database('NotShop.db');
   db.run(`INSERT INTO Orders (UserId) VALUES(?)`, [id] , function(err){
     if (err) {
-      return console.log(err.message);
+      reject( console.log(err.message));
     }
-    // get the last insert id
-    db.close((err)=>{  if (err) {
-        return console.log(err.message);
-      }});
-    callback(id,this.lastID);
+
+
+    resolve(this.lastID);
     //console.log(`indhold i OrID ${OrID}`);
   });
-  //db.close();
-  //callback(id,OrID);
+  db.close((err)=>{  if (err) {
+      reject( console.log(err.message)<9;
+    }});
+});
 }
+
 var app = express();
 app.use(cors());
 app.post("/addUser/", async function(req,res){
   var formjson = JSON.parse(req.params.data.substring(1));
-  addUser(formjson, (ret) => {
-    addUserToOrder(ret, (UsID,OrID)=>{
-      console.log(`return fra chain UsID: ${UsID}`);
-      console.log(`return fra chain OrID: ${OrID}`);
-      res.status(200).send(JSON.stringify({UserId: UsID,OrderId: OrID}));
-      console.log({UserId: UsID,OrderId: OrID});
-      //res.end();
-    });
-  });
-  console.log(formjson);
-  //console.log(ret);
-  //res.status(200).send(JSON.stringify({UserId: "1",OrderId: "1"}));
+  try {
+    let usId = await addUser(formjson)
+    let orId = await addUserToOrder(usId)
+    res.status(200).send(JSON.stringify({UserId: usId,OrderId: orId}));
+  };
+  catch {};
+  console.log({UserId: usId,OrderId: orId});
 });
+
 
 app.get("/login/:data", function(req,res){
   var formjson = JSON.parse(req.params.data.substring(1));
