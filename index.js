@@ -17,7 +17,7 @@ function addUser(form){
 
   db.run(`INSERT INTO User (Navn,Adresse,Postnummer,Telefon,Email,Password) VALUES(?,?,?,?,?,?)`, formArr, function(err){
     if (err) {
-      reject(console.log(err.message));
+      reject(err.message);
     }
     // get the last insert id
 
@@ -25,7 +25,7 @@ function addUser(form){
 
   });
   db.close((err)=>{  if (err) {
-      reject(console.log(err.message));
+      reject(err.message);
     }});
   });
 }
@@ -35,15 +35,12 @@ function addUserToOrder(id){
   let db = new sql.Database('NotShop.db');
   db.run(`INSERT INTO Orders (UserId) VALUES(?)`, [id] , function(err){
     if (err) {
-      reject( console.log(err.message));
+      reject(err.message);
     }
-
-
     resolve(this.lastID);
-    //console.log(`indhold i OrID ${OrID}`);
   });
   db.close((err)=>{  if (err) {
-      reject( console.log(err.message));
+      reject(err.message);
     }});
 });
 }
@@ -51,13 +48,15 @@ function addUserToOrder(id){
 var app = express();
 app.use(cors());
 app.post("/addUser/", async function(req,res){
-  var formjson = JSON.parse(req.params.data.substring(1));
+  var formjson = JSON.parse(req.body);
   try {
     let usId = await addUser(formjson)
     let orId = await addUserToOrder(usId)
     res.status(200).send(JSON.stringify({UserId: usId,OrderId: orId}));
   }
-  catch {}
+  catch(error) {
+    console.error(error);
+  }
   console.log({UserId: usId,OrderId: orId});
 });
 
