@@ -43,7 +43,7 @@ function addUserToOrder(id){
     //console.log(`indhold i OrID ${OrID}`);
   });
   db.close((err)=>{  if (err) {
-      reject( console.log(err.message)<9;
+      reject( console.log(err.message));
     }});
 });
 }
@@ -56,8 +56,8 @@ app.post("/addUser/", async function(req,res){
     let usId = await addUser(formjson)
     let orId = await addUserToOrder(usId)
     res.status(200).send(JSON.stringify({UserId: usId,OrderId: orId}));
-  };
-  catch {};
+  }
+  catch {}
   console.log({UserId: usId,OrderId: orId});
 });
 
