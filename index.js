@@ -6,105 +6,100 @@ const cors = require('cors');
 var jsonParser = bodyParser.json();
 var textParser = bodyParser.text();
 
-/*var addUser = express();
-addUser.get("/:data", function(req,res){
-  console.log(req.params.data);
-  res.send(JSON.stringify({UserId: "1",OrderId: "1"}));
-});
-/*
-addUser.post("/", textParser, function(req,res){
-  if (!req.body){
-    console.log('ingen body,navn');
-  }
-  let addUserForm = JSON.parse(req.body);
-  console.log(addUserForm);
-  res.set('Content-Type', 'text/html');
-  res.send(JSON.stringify({UserId: "1",OrderId: "1"}));
-});
-/*
-var login = express();
-login.post("/" textParser, function(req,res){
-
-});
+/* funktioner til at tilføje en bruger til databasen
+addUser tager et JSON som parameter og indsætter det i db
+Den anden funktion addUserToOrder taget bruger ID som parametet
+og indsætter i ordre tabellen.
 */
-function addUser(form, callback){
+function addUser(form){
+  return new Promise((resolve,reject) => {
   let db = new sql.Database('NotShop.db');
 
   formArr = [form.navn, form.adresse,form.postnummer, form.telefon, form.email, form.password];
-  //var UsID = 0;
+
 
 
   db.run(`INSERT INTO User (Navn,Adresse,Postnummer,Telefon,Email,Password) VALUES(?,?,?,?,?,?)`, formArr, function(err){
     if (err) {
-      return console.log(err.message);
+      reject(err.message);
     }
     // get the last insert id
-    db.close((err)=>{  if (err) {
-        return console.log(err.message);
-      }});
-    callback(this.lastID);
-    //UsID = this.lastID;
-     //console.log(`A row has been inserted with rowid ${this.lastID}`);
-     //console.log(`indhold i UsID ${UsID}`);
+
+    resolve(this.lastID);
 
   });
-  /*db.run(`INSERT INTO Orders (UserId) VALUES(?)`, [parseInt(UsID,10)] , function(err){
-    if (err) {
-      return console.log(err.message);
-    }
-    // get the last insert id
-    OrID = this.lastID;
-    console.log(`indhold i OrID ${OrID}`);
-  });*/
-
-  //console.log(`test hvad er der i UsID: ${UsID}`);
-  //db.close();
-  //callback(UsID);
+  db.close((err)=>{  if (err) {
+      reject(err.message);
+    }});
+  });
 }
 
-function addUserToOrder(id, callback){
-  //var OrID = 0;
+function addUserToOrder(id){
+  return new Promise( (resolve,reject) => {
   let db = new sql.Database('NotShop.db');
   db.run(`INSERT INTO Orders (UserId) VALUES(?)`, [id] , function(err){
     if (err) {
-      return console.log(err.message);
+      reject(err.message);
     }
-    // get the last insert id
-    db.close((err)=>{  if (err) {
-        return console.log(err.message);
-      }});
-    callback(id,this.lastID);
-    //console.log(`indhold i OrID ${OrID}`);
+    resolve(this.lastID);
   });
-  //db.close();
-  //callback(id,OrID);
+  db.close((err)=>{  if (err) {
+      reject(err.message);
+    }});
+});
 }
+
+/*
+Kald af express samt opsætning af cors og bodyParser
+*/
 var app = express();
 app.use(cors());
-app.get("/addUser/:data", function(req,res){
-  var formjson = JSON.parse(req.params.data.substring(1));
-  addUser(formjson, (ret) => {
-    addUserToOrder(ret, (UsID,OrID)=>{
-      console.log(`return fra chain UsID: ${UsID}`);
-      console.log(`return fra chain OrID: ${OrID}`);
-      res.status(200).send(JSON.stringify({UserId: UsID,OrderId: OrID}));
-      console.log({UserId: UsID,OrderId: OrID});
-      //res.end();
-    });
-  });
-  console.log(formjson);
-  //console.log(ret);
-  //res.status(200).send(JSON.stringify({UserId: "1",OrderId: "1"}));
+app.use(bodyParser.text());
+
+
+/*
+express til tilføje bruger
+*/
+app.post("/addUser/", async function(req,res){
+  var formjson = JSON.parse(req.body);
+  try {
+    var usId = await addUser(formjson)
+    var orId = await addUserToOrder(usId)
+    res.status(200).send(JSON.stringify({UserId: usId,OrderId: orId}));
+  }
+  catch(error) {
+    console.error(error);
+  }
+  //console.log({UserId: usId,OrderId: orId});
 });
 
-app.get("/login/:data", function(req,res){
-  var formjson = JSON.parse(req.params.data.substring(1));
+function checkUser(form){
+  let db = new sql.Database('NotShop.db');
+
+  let sqlCode = `SELECT UserId userId FROM User WHERE Navn=? AND Password=?`;
+
+  db.get(sqlCode,[form.username,form.password], (err,row) =>{
+    if (err){
+      return console.error(err.message);
+    }
+    return row.userId;
+  });
+}
+
+
+/*
+Express til login
+*/
+app.post("/login/", function(req,res){
+  var formjson = JSON.parse(req.boby);
+  console.log(formjson);
+  var userId = checkUser(formjson);
   console.log(formjson);
   res.status(200).send(JSON.stringify({UserId: "1",OrderId: "1"}));
 });
-//app.use("/addUser",addUser);
-//app.use("/login",login);
 
+
+// Opsæt server på 8080
 
 app.listen(8080, function(){
   console.log('lytter på 8080');
