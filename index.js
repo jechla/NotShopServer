@@ -17,8 +17,6 @@ function addUser(form){
 
   formArr = [form.navn, form.adresse,form.postnummer, form.telefon, form.email, form.password];
 
-
-
   db.run(`INSERT INTO User (Navn,Adresse,Postnummer,Telefon,Email,Password) VALUES(?,?,?,?,?,?)`, formArr, function(err){
     if (err) {
       reject(err.message);
@@ -56,7 +54,6 @@ var app = express();
 app.use(cors());
 app.use(bodyParser.text());
 
-
 /*
 express til tilføje bruger
 */
@@ -74,30 +71,43 @@ app.post("/addUser/", async function(req,res){
 });
 
 function checkUser(form){
-  let db = new sql.Database('NotShop.db');
+  return new Promise( (resolve,reject) => {
+    let db = new sql.Database('NotShop.db');
 
-  let sqlCode = `SELECT UserId userId FROM User WHERE Navn=? AND Password=?`;
+    let sqlCode = `SELECT UserId userId FROM User WHERE Navn=? AND Password=?`;
 
-  db.get(sqlCode,[form.username,form.password], (err,row) =>{
-    if (err){
-      return console.error(err.message);
-    }
-    return row.userId;
+    db.get(sqlCode,[form.username,form.password], (err,row) =>{
+      if (err){
+        reject(err.message);
+      }
+      if (row){
+        resolve(row.userId);
+      } else {
+        reject("notuser");
+      }
+    });
   });
 }
-
 
 /*
 Express til login
 */
-app.post("/login/", function(req,res){
-  var formjson = JSON.parse(req.boby);
-  console.log(formjson);
-  var userId = checkUser(formjson);
-  console.log(formjson);
-  res.status(200).send(JSON.stringify({UserId: "1",OrderId: "1"}));
+app.post("/login/", async function(req,res){
+  var test= ""
+  test = req.body;
+  var formjson = JSON.parse(test);
+  try {
+    var userId = await checkUser(formjson);
+    var orId = await addUserToOrder(userId);
+    res.status(200).send(JSON.stringify({UserId: userId,OrderId: orId}));
+  }
+  catch (error){
+    console.error(error);
+    if (error == "notuser"){
+      res.status(200).send(JSON.stringify({UserId: false, OrderId: false}));
+    }
+  }
 });
-
 
 // Opsæt server på 8080
 
