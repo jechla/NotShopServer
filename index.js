@@ -86,6 +86,9 @@ function checkUser(form){
         reject("notuser");
       }
     });
+    db.close((err)=>{  if (err) {
+        reject(err.message);
+      }});
   });
 }
 
