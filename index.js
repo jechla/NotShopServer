@@ -136,6 +136,9 @@ app.post("/addProd/", async function(req,res){
     formjson.OrderlineId= orderlineId;
     res.status(200).send(JSON.stringify(formjson));
   }
+  catch (error){
+    console.error(error);
+  }
 });
 
 // Opsæt server på 8080
