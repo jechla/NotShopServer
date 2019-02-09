@@ -47,6 +47,21 @@ function addUserToOrder(id){
 });
 }
 
+function addProdToOrderline(form){
+  return new Promise( (resolve,reject) => {
+    let db = new sql.Database('NotShop.db');
+
+    db.run(`INSERT INTO Orderline(OrderId,ProductId) VALUES(?,?)`, [form.OrderId,form.ProductId] , function(err){
+      if (err) {
+        reject(err.message);
+      }
+      resolve(this.lastID);
+    });
+    db.close((err)=>{  if (err) {
+        reject(err.message);
+    }});
+  });
+}
 /*
 Kald af express samt opsætning af cors og bodyParser
 */
@@ -109,6 +124,17 @@ app.post("/login/", async function(req,res){
     if (error == "notuser"){
       res.status(200).send(JSON.stringify({UserId: false, OrderId: false}));
     }
+  }
+});
+
+app.post("/addProd/", async function(req,res){
+  var text = ""
+  text = req.body;
+  var formjson =JSON.parse(text);
+  try {
+    var orderlineId = await addProdToOrderline(formjson);
+    formjson.OrderlineId= orderlineId;
+    res.status(200).send(JSON.stringify(formjson));
   }
 });
 
