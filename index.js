@@ -141,6 +141,41 @@ app.post("/addProd/", async function(req,res){
   }
 });
 
+app.get("/getProd/", async (req,res)=>{
+  try{
+  let db = new sql.Database('NotShop.db');
+
+  let sqlCode =`SELECT ProductId productId, Description description, Prize prize, Imgpath imgpath, Title title FROM Product`;
+
+  await db.all(sqlCode,[],async (err,rows) => {
+    try{
+    if (err){
+      console.log(err.message);
+    } else {
+      await rows.forEach((row) => {
+        var prodjson = {Title: row.title,
+                        Description: row.description,
+                        Prize: row.prize,
+                        Imgpath: row.imgpath,
+                        ProductId: row.productId
+                      };
+        res.write(JSON.stringify(prodjson));
+      });
+      res.end();
+    }
+  } catch (error){console.error(error);}
+  });
+
+  db.close((err)=> {
+    console.log(err);
+  });
+
+}
+  catch (error){
+    console.error(error);
+  }
+});
+
 // Opsæt server på 8080
 
 app.listen(8080, function(){
