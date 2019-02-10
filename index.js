@@ -1,4 +1,5 @@
 const express = require('express');
+const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const sql = require('sqlite3');
 const cors = require('cors');
@@ -65,9 +66,10 @@ function addProdToOrderline(form){
 /*
 Kald af express samt opsætning af cors og bodyParser
 */
-var app = express();
-app.use(cors());
-app.use(bodyParser.text());
+const app = express();
+app.use(morgan('dev')); // loging
+app.use(cors()); // cors support
+app.use(bodyParser.text()); // parse body,
 
 /*
 express til tilføje bruger

@@ -4,6 +4,7 @@
   "description": "Not a Shop Server",
   "main": "index.js",
   "scripts": {
+    "start": "nodemon index.js",
     "test": "mocha"
   },
   "repository": {
@@ -24,6 +25,8 @@
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
     "express": "^4.16.4",
+    "morgan": "^1.9.1",
+    "nodemon": "^1.18.10",
     "sqlite3": "^4.0.6"
   }
 }
