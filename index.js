@@ -159,6 +159,32 @@ function noProd(){
     });
   });
 }
+
+function getBasket(id){
+  return new Promise((resolve,reject) =>{
+    let basket = {content: []};
+    let db = new sql.Database('NotShop.db');
+
+    let sqlcode =`SELECT OrderlineId orderlineId, ProductId productId FROM Orderline WHERE OrderId=?`;
+
+    db.all(sqlcode,[id], async (err,rows) =>{
+      if (err){
+        reject(err.message);
+      }
+      if (rows) {
+        try {
+          await rows.forEach((row) =>{
+            basket.content.push({OrderlineId: row.orderlineId, ProductId: row.productId});
+          });
+          resolve(basket);
+        } catch (error){ reject(error)};
+      } else {resolve(false);}
+    });
+    db.close((err)=> {
+      reject(err);
+    });
+  });
+}
 /*
 Express til login
 */
@@ -214,6 +240,19 @@ app.get("/noProd/", async (req,res) => {
     res.send(no.toString());
   } catch (error) {
     console.error(error);
+  }
+});
+
+app.get("/basket/", async (req,res)=>{
+  if (req.query.id){
+    try {
+      let basketjson = await getBasket(req.query.id);
+      res.status(200).send(JSON.stringify(basketjson));
+    } catch (error){
+      console.error(error);
+    }
+  } else {
+    res.end("false");
   }
 });
 
