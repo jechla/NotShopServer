@@ -103,12 +103,62 @@ function checkUser(form){
         reject("notuser");
       }
     });
-    db.close((err)=>{  if (err) {
+    db.close((err)=>{
+      if (err) {
         reject(err.message);
-      }});
+      }
+    });
   });
 }
 
+function getProd(id){
+  return new Promise((resolve, reject) => {
+    let db = new sql.Database('NotShop.db');
+
+    let sqlCode =`SELECT DISTINCT ProductId productId, Description description, Prize prize, Imgpath imgpath, Title title FROM Product WHERE ProductId=?`;
+
+    db.get(sqlCode,[id], (err,row) => {
+      if (err){
+        reject(err.message);
+      }
+      if (row) {
+       let prodjson = {Title: row.title,
+                      Description: row.description,
+                      Prize: row.prize,
+                      Imgpath: row.imgpath,
+                      ProductId: row.productId
+                      };
+        resolve(prodjson);
+      } else {resolve(false);}
+    });
+
+    db.close((err)=> {
+      reject(err);
+    });
+  });
+}
+
+function noProd(){
+  return new Promise((resolve,reject) =>{
+    let db = new sql.Database('NotShop.db');
+
+    let sqlcode =`SELECT count(ProductId) no FROM Product`;
+
+    db.get(sqlcode,[], (err,row) => {
+      if (err){
+        reject(err.message);
+      }
+      if (row) {
+        resolve(row.no);
+      } else {
+        resolve(false);
+      }
+    });
+    db.close((err)=> {
+      reject(err);
+    });
+  });
+}
 /*
 Express til login
 */
@@ -144,36 +194,25 @@ app.post("/addProd/", async function(req,res){
 });
 
 app.get("/getProd/", async (req,res)=>{
-  try{
-  let db = new sql.Database('NotShop.db');
-
-  let sqlCode =`SELECT ProductId productId, Description description, Prize prize, Imgpath imgpath, Title title FROM Product`;
-
-  await db.all(sqlCode,[],async (err,rows) => {
-    try{
-    if (err){
-      console.log(err.message);
-    } else {
-      await rows.forEach((row) => {
-        var prodjson = {Title: row.title,
-                        Description: row.description,
-                        Prize: row.prize,
-                        Imgpath: row.imgpath,
-                        ProductId: row.productId
-                      };
-        res.write(JSON.stringify(prodjson));
-      });
-      res.end();
+  if (req.query.id){
+    try {
+      let prodjson = await getProd(req.query.id);
+      res.status(200).send(JSON.stringify(prodjson));
     }
-  } catch (error){console.error(error);}
-  });
+    catch (error) {
+      console.error(error);
+    }
+  }
+  else {
+    res.end("false");
+  }
+});
 
-  await db.close((err)=> {
-    console.log(err);
-  });
-
-}
-  catch (error){
+app.get("/noProd/", async (req,res) => {
+  try {
+    let no = await noProd();
+    res.send(no.toString());
+  } catch (error) {
     console.error(error);
   }
 });
