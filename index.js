@@ -168,7 +168,7 @@ app.get("/getProd/", async (req,res)=>{
   } catch (error){console.error(error);}
   });
 
-  db.close((err)=> {
+  await db.close((err)=> {
     console.log(err);
   });
 
