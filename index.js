@@ -185,6 +185,26 @@ function getBasket(id){
     });
   });
 }
+
+function delItem(id){
+  return new Promise((resolve,reject) =>{
+    let db = new sql.Database('NotShop.db');
+
+    let sqlcode =`DELETE FROM Orderline where OrderlineId=?`;
+
+    db.run(sqlcode,[id], function(err){
+      if (err){
+        reject(err.message);
+      } else {
+        resolve(this.changes);
+      }
+    });
+
+    db.close((err)=> {
+      reject(err);
+    });
+  });
+}
 /*
 Express til login
 */
@@ -253,6 +273,23 @@ app.get("/basket/", async (req,res)=>{
     }
   } else {
     res.end("false");
+  }
+});
+
+app.get("/delItem/", async (req,res)=>{
+  if (req.query.id){
+    try {
+      let noChanges = await delItem(req.query.id);
+      if (noChanges == 0){
+        res.send("false");
+      } else {
+        res.status(200).send("true");
+      }
+    } catch (error){
+        console.error(error);
+    }
+  } else {
+    res.send("false");
   }
 });
 
