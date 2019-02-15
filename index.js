@@ -91,9 +91,9 @@ function checkUser(form){
   return new Promise( (resolve,reject) => {
     let db = new sql.Database('NotShop.db');
 
-    let sqlCode = `SELECT UserId userId FROM User WHERE Navn=? AND Password=?`;
+    let sqlCode = `SELECT UserId userId FROM User WHERE Email=? AND Password=?`;
 
-    db.get(sqlCode,[form.username,form.password], (err,row) =>{
+    db.get(sqlCode,[form.email,form.password.toString()], (err,row) =>{
       if (err){
         reject(err.message);
       }
