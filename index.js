@@ -50,7 +50,6 @@ app.post("/login/", async function(req,res){
   catch (error){
     console.error(error);
     res.end("error");
-    }
   }
 });
 
