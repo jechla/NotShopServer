@@ -5,8 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const notshopdb = require('./lib/notshopdb.js');
 
-var jsonParser = bodyParser.json();
-var textParser = bodyParser.text();
+const textParser = bodyParser.text();
 
 /*
 Kald af express samt opsætning af cors og bodyParser
@@ -20,14 +19,15 @@ app.use(bodyParser.text()); // parse body,
 express til tilføje bruger
 */
 app.post("/addUser/", async function(req,res){
-  var formjson = JSON.parse(req.body);
+  let formjson = JSON.parse(req.body);
   try {
-    var usId = await notshopdb.addUser(formjson)
-    var orId = await notshopdb.addUserToOrder(usId)
+    let usId = await notshopdb.addUser(formjson)
+    let orId = await notshopdb.addUserToOrder(usId)
     res.status(200).send(JSON.stringify({UserId: usId,OrderId: orId}));
   }
   catch(error) {
     console.error(error);
+    res.end("error");
   }
   //console.log({UserId: usId,OrderId: orId});
 });
@@ -35,33 +35,36 @@ app.post("/addUser/", async function(req,res){
 Express til login
 */
 app.post("/login/", async function(req,res){
-  var test= ""
+  let test= ""
   test = req.body;
-  var formjson = JSON.parse(test);
+  let formjson = JSON.parse(test);
   try {
-    var userId = await notshopdb.checkUser(formjson);
-    var orId = await notshopdb.addUserToOrder(userId);
+    let userId = await notshopdb.checkUser(formjson);
+    let orId = await notshopdb.addUserToOrder(userId);
     res.status(200).send(JSON.stringify({UserId: userId,OrderId: orId}));
   }
   catch (error){
     console.error(error);
     if (error == "notuser"){
       res.status(200).send(JSON.stringify({UserId: false, OrderId: false}));
+    } else {
+      res.end("error");
     }
   }
 });
 
 app.post("/addProd/", async function(req,res){
-  var text = ""
+  let text = ""
   text = req.body;
-  var formjson =JSON.parse(text);
+  let formjson =JSON.parse(text);
   try {
-    var orderlineId = await notshopdb.addProdToOrderline(formjson);
+    let orderlineId = await notshopdb.addProdToOrderline(formjson);
     formjson.OrderlineId= orderlineId;
     res.status(200).send(JSON.stringify(formjson));
   }
   catch (error){
     console.error(error);
+    res.end("error");
   }
 });
 
@@ -73,6 +76,7 @@ app.get("/getProd/", async (req,res)=>{
     }
     catch (error) {
       console.error(error);
+      res.end("error");
     }
   }
   else {
@@ -86,6 +90,7 @@ app.get("/noProd/", async (req,res) => {
     res.send(no.toString());
   } catch (error) {
     console.error(error);
+    res.end("error");
   }
 });
 
@@ -96,6 +101,7 @@ app.get("/basket/", async (req,res)=>{
       res.status(200).send(JSON.stringify(basketjson));
     } catch (error){
       console.error(error);
+      res.end("error");
     }
   } else {
     res.end("false");
@@ -113,6 +119,7 @@ app.get("/delItem/", async (req,res)=>{
       }
     } catch (error){
         console.error(error);
+        res.end("error");
     }
   } else {
     res.send("false");
