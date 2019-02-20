@@ -40,15 +40,16 @@ app.post("/login/", async function(req,res){
   let formjson = JSON.parse(test);
   try {
     let userId = await notshopdb.checkUser(formjson);
-    let orId = await notshopdb.addUserToOrder(userId);
-    res.status(200).send(JSON.stringify({UserId: userId,OrderId: orId}));
+    if (userId){
+      let orId = await notshopdb.addUserToOrder(userId);
+      res.status(200).send(JSON.stringify({UserId: userId,OrderId: orId}));
+    } else {
+      res.status(200).send(JSON.stringify({UserId: false, OrderId: false}));
+    }
   }
   catch (error){
     console.error(error);
-    if (error == "notuser"){
-      res.status(200).send(JSON.stringify({UserId: false, OrderId: false}));
-    } else {
-      res.end("error");
+    res.end("error");
     }
   }
 });
