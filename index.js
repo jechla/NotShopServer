@@ -126,6 +126,20 @@ app.get("/delItem/", async (req,res)=>{
   }
 });
 
+app.get("/getOrders/", async (req,res)=>{
+  if (req.query.id){
+    try {
+      let orderId = await notshopdb.addUserToOrder(req.query.id);
+      res.status(200).send(JSON.stringify({OrderId: orderId}));
+    } catch (error){
+      console.error(error);
+      res.end("error");
+    }
+  } else {
+    res.end("false");
+  }
+});
+
 // Opsæt server på 8080
 
 app.listen(8080, function(){
